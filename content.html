@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AUTHOR</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Anton, sans-serif;
+            background: url('istockphoto-183815050-170667a.webp') repeat;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            position: relative;
+            cursor: url('brick.png'), auto; /* Replace with your brick cursor image */
+        }
+
+        #author {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            font-size: 100px;
+            color: black;
+            font-weight: bold;
+            z-index: 10;
+        }
+
+        #folder-icon {
+            width: 100px;
+            height: 100px;
+            cursor: pointer;
+        }
+
+        #gallery {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.9);
+            z-index: 20;
+            overflow: hidden;
+        }
+
+        #back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-size: 20px;
+            cursor: pointer;
+            background-color: black;
+            color: white;
+            padding: 10px 20px;
+            z-index: 30;
+        }
+
+        .collage-image {
+            position: absolute;
+            transition: transform 0.3s ease;
+        }
+
+        #mesh-container {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 100%;
+            overflow: hidden;
+            z-index: 15;
+        }
+
+        /* Add any custom CSS styles here */
+    </style>
+</head>
+<body>
+    <audio id="background-music" autoplay loop>
+        <source src="C:\Users\aratr\Desktop\linen\stantonysfire.mp3" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+    
+    <div id="author">AUTHOR</div>
+    <img src="folder-icon.png" id="folder-icon" alt="Folder Icon">
+
+    <div id="gallery">
+        <div id="back-button">Back</div>
+        <!-- Gallery images will be dynamically inserted here -->
+    </div>
+
+    <div id="mesh-container"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        const folderIcon = document.getElementById('folder-icon');
+        const gallery = document.getElementById('gallery');
+        const backButton = document.getElementById('back-button');
+
+        folderIcon.addEventListener('click', () => {
+            folderIcon.style.display = 'none';
+            gallery.style.display = 'block';
+            showGallery();
+        });
+
+        backButton.addEventListener('click', () => {
+            gallery.style.display = 'none';
+            folderIcon.style.display = 'block';
+        });
+
+        function showGallery() {
+    const images = [
+'images/20240526_193750_0000.png', 'images/AUTHOR_20240706_190225_0000.png', 'images/AUTHOR_20240719_180513_0000.png', 'images/AUTHOR_20240730_174945_0000.png','images/author_20240801_100402_0000.png','images/Untitled design_20240331_193228_0000.png','images/Untitled design_20240405_185143_0000.png', 'images/Untitled design_20240405_185504_0000.png','images/Untitled design_20240602_170908_0000.png',       // Add paths to your images here
+    ];
+    images.forEach((src, index) => {
+        const img = document.createElement('img');
+        img.src = src;
+        img.className = 'collage-image';
+        img.style.transform = `translate(${Math.random() * 100}vw, ${Math.random() * 100}vh)`;
+        img.style.width = `${Math.random() * 20 + 10}%`;
+        img.style.position = 'absolute'; // Ensure absolute positioning for dragging
+        img.style.cursor = 'grab'; // Set cursor style for draggable effect
+        gallery.appendChild(img);
+        makeDraggable(img); // Enable dragging for this image
+    });
+}
+
+function makeDraggable(img) {
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+
+    img.addEventListener('mousedown', (e) => {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+        initialX = img.offsetLeft;
+        initialY = img.offsetTop;
+        img.style.cursor = 'grabbing'; // Change cursor style when dragging
+    });
+
+    document.addEventListener('mousemove', (e) => {
+        if (isDragging) {
+            const dx = e.clientX - startX;
+            const dy = e.clientY - startY;
+            img.style.left = `${initialX + dx}px`;
+            img.style.top = `${initialY + dy}px`;
+        }
+    });
+
+    document.addEventListener('mouseup', () => {
+        if (isDragging) {
+            isDragging = false;
+            img.style.cursor = 'grab'; // Revert cursor style
+        }
+    });
+}
+
+
+        // Three.js code for the mesh
+        const container = document.getElementById('mesh-container');
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ alpha: true });
+        renderer.setSize(container.clientWidth, container.clientHeight);
+        container.appendChild(renderer.domElement);
+
+        const geometry = new THREE.PlaneGeometry(40, 20, 20, 10);
+        const material = new THREE.LineBasicMaterial({ color: 0x000000 });
+        const wireframe = new THREE.WireframeGeometry(geometry);
+        const line = new THREE.LineSegments(wireframe, material);
+        scene.add(line);
+
+        const dotGeometry = new THREE.SphereGeometry(0.2, 32, 32);
+        const dotMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+        const dot = new THREE.Mesh(dotGeometry, dotMaterial);
+        scene.add(dot);
+
+        camera.position.z = 30;
+
+        let direction = 1;
+
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Move the red dot
+            dot.position.y += 0.1 * direction;
+            if (dot.position.y > 10 || dot.position.y < -10) {
+                direction *= -1; // Reverse direction
+                vibrateLines();
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        function vibrateLines() {
+            const position = line.geometry.attributes.position;
+            for (let i = 0; i < position.count; i++) {
+                const wave = Math.sin(i + performance.now() * 0.005) * 0.5;
+                position.setZ(i, wave);
+            }
+            position.needsUpdate = true;
+        }
+
+        animate();
+
+        window.addEventListener('resize', () => {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        });
+    </script>
+</body>
+</html>
